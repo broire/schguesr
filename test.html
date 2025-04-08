@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mini GeoGuessr</title>
+  <style>
+    body { 
+      font-family: sans-serif; 
+      margin: 0; 
+      text-align: center; 
+      background: #f0f0f0;
+    }
+    #container {
+      width: 100%;
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 10px;
+    }
+    #screenshot {
+      width: 100%;
+      max-height: 20vh;
+      object-fit: contain;
+      margin-bottom: 20px;
+    }
+    #gameMapContainer {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+      margin-bottom: 20px;
+    }
+    #gameMap {
+      max-width: 90%;
+      max-height: 60vh;
+      width: auto;
+      height: auto;
+      border: 2px solid #333;
+      cursor: crosshair;
+      object-fit: contain;
+    }
+    .marker {
+      position: absolute;
+      width: 10px;
+      height: 10px;
+      background: red;
+      border-radius: 50%;
+      transform: translate(-50%, -50%);
+    }
+    button { 
+      margin-top: 10px; 
+      padding: 10px 20px; 
+      font-size: 16px; 
+      cursor: pointer;
+      display: block;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    #results {
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div id="container">
+    <h1>Mini GeoGuessr - Round 1</h1>
+    <img id="screenshot" src="https://raw.githubusercontent.com/broire/schguesr/refs/heads/main/example%20screenshot.png" alt="Screenshot" />
+    
+    <div id="gameMapContainer">
+      <img id="gameMap" src="https://raw.githubusercontent.com/broire/schguesr/refs/heads/main/MAP1%20(1).png" alt="Game Map" onclick="makeGuess(event)" />
+      <div id="guessMarker" class="marker" style="display:none;"></div>
+    </div>
+    
+    <button onclick="submitGuess()">Submit Guess</button>
+
+    <div id="results"></div>
+  </div>
+
+  <script>
+    const correctCoords = { x: 300, y: 200 }; // Placeholder - change to real coords
+    let guessCoords = null;
+
+    function makeGuess(event) {
+      const map = document.getElementById("gameMap");
+      const rect = map.getBoundingClientRect();
+      const x = event.clientX - rect.left;
+      const y = event.clientY - rect.top;
+
+      guessCoords = { x, y };
+
+      const marker = document.getElementById("guessMarker");
+      marker.style.left = x + "px";
+      marker.style.top = y + "px";
+      marker.style.display = "block";
+    }
+
+    function submitGuess() {
+      if (!guessCoords) {
+        alert("Please click on the map to make a guess.");
+        return;
+      }
+
+      const dx = guessCoords.x - correctCoords.x;
+      const dy = guessCoords.y - correctCoords.y;
+      const distance = Math.sqrt(dx * dx + dy * dy);
+
+      const score = Math.max(0, 500 - Math.round(distance));
+
+      document.getElementById("results").innerHTML =
+        `<p>Your guess: (${Math.round(guessCoords.x)}, ${Math.round(guessCoords.y)})</p>
+         <p>Correct location: (${correctCoords.x}, ${correctCoords.y})</p>
+         <p>Distance: ${Math.round(distance)} px</p>
+         <h3>Score: ${score}</h3>`;
+    }
+  </script>
+</body>
+</html>
