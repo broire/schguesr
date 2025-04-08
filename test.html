@@ -29,6 +29,8 @@
       align-items: center;
       position: relative;
       margin-bottom: 20px;
+      overflow: hidden;
+      cursor: grab;
     }
     #gameMap {
       max-width: 90%;
@@ -36,8 +38,9 @@
       width: auto;
       height: auto;
       border: 2px solid #333;
-      cursor: crosshair;
+      cursor: grab;
       object-fit: contain;
+      transition: transform 0.1s ease-in-out;
     }
     .marker {
       position: absolute;
@@ -67,7 +70,7 @@
     <img id="screenshot" src="https://raw.githubusercontent.com/broire/schguesr/refs/heads/main/example%20screenshot.png" alt="Screenshot" />
     
     <div id="gameMapContainer">
-      <img id="gameMap" src="https://raw.githubusercontent.com/broire/schguesr/refs/heads/main/MAP1%20(1).png" alt="Game Map" onclick="makeGuess(event)" />
+      <img id="gameMap" src="https://raw.githubusercontent.com/broire/schguesr/refs/heads/main/MAP1%20(1).png" alt="Game Map" onclick="makeGuess(event)" onwheel="zoomMap(event)" />
       <div id="guessMarker" class="marker" style="display:none;"></div>
     </div>
     
@@ -79,6 +82,42 @@
   <script>
     const correctCoords = { x: 300, y: 200 }; // Placeholder - change to real coords
     let guessCoords = null;
+    let scaleFactor = 1;
+    let mapElement = document.getElementById("gameMap");
+    let isDragging = false;
+    let startX, startY, initialX, initialY;
+
+    // Handle mouse down event to start dragging
+    mapElement.addEventListener('mousedown', (event) => {
+      isDragging = true;
+      startX = event.clientX;
+      startY = event.clientY;
+      initialX = mapElement.offsetLeft;
+      initialY = mapElement.offsetTop;
+      mapElement.style.cursor = 'grabbing';
+    });
+
+    // Handle mouse move event to move the map while dragging
+    mapElement.addEventListener('mousemove', (event) => {
+      if (isDragging) {
+        let dx = event.clientX - startX;
+        let dy = event.clientY - startY;
+        mapElement.style.left = initialX + dx + 'px';
+        mapElement.style.top = initialY + dy + 'px';
+      }
+    });
+
+    // Handle mouse up event to stop dragging
+    mapElement.addEventListener('mouseup', () => {
+      isDragging = false;
+      mapElement.style.cursor = 'grab';
+    });
+
+    // Handle mouse leave event to stop dragging if mouse leaves the map
+    mapElement.addEventListener('mouseleave', () => {
+      isDragging = false;
+      mapElement.style.cursor = 'grab';
+    });
 
     function makeGuess(event) {
       const map = document.getElementById("gameMap");
@@ -111,6 +150,23 @@
          <p>Correct location: (${correctCoords.x}, ${correctCoords.y})</p>
          <p>Distance: ${Math.round(distance)} px</p>
          <h3>Score: ${score}</h3>`;
+    }
+
+    function zoomMap(event) {
+      // Prevent page from scrolling when zooming the map
+      event.preventDefault();
+
+      if (event.deltaY < 0) {
+        scaleFactor += 0.1; // Zoom in
+      } else {
+        scaleFactor -= 0.1; // Zoom out
+      }
+
+      // Ensure zooming doesn't get too extreme
+      scaleFactor = Math.min(Math.max(1, scaleFactor), 3); // No zoom out beyond original size
+
+      // Apply the zoom by changing the scale of the map
+      mapElement.style.transform = `scale(${scaleFactor})`;
     }
   </script>
 </body>
